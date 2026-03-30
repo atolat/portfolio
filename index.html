@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Arpan Tolat</title>
+<title>cachemeifyoucan.dev</title>
 <meta name="description" content="Arpan Tolat — Engineering at Salesforce. Distributed systems, build infrastructure, developer productivity.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Chakra+Petch:wght@600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -86,14 +86,101 @@ nav .nav-inner {
   justify-content: space-between;
 }
 .nav-name {
-  font-weight: 600;
-  font-size: 13px;
-  background: var(--gradient);
+  font-family: 'Chakra Petch', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  position: relative;
+  padding: 4px 0;
+  color: var(--text);
+  -webkit-text-fill-color: unset;
+  cursor: default;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ── Pixel cat sprite ── */
+.pixel-sprite {
+  width: 48px;
+  height: 32px;
+  position: relative;
+  flex-shrink: 0;
+}
+.pixel-sprite img {
+  width: 48px;
+  height: 32px;
+  image-rendering: pixelated;
+  display: block;
+}
+
+/* ── Brand text with gradient sweep ── */
+.nav-name .brand-text {
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(
+    90deg,
+    var(--accent-1) 0%,
+    var(--text) 15%,
+    var(--text) 35%,
+    var(--accent-2) 50%,
+    var(--text) 65%,
+    var(--text) 85%,
+    var(--accent-3) 100%
+  );
+  background-size: 300% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: 0.02em;
+  animation: sweep 4s ease-in-out infinite;
 }
+@keyframes sweep {
+  0%   { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+/* ── Speed lines that streak through ── */
+.nav-name .sl {
+  position: absolute;
+  height: 1.5px;
+  pointer-events: none;
+  border-radius: 2px;
+}
+.nav-name .sl-1 {
+  top: 10%;
+  left: -60px;
+  width: calc(100% + 120px);
+  background: linear-gradient(to right, transparent, var(--accent-1) 30%, var(--accent-1) 50%, transparent);
+  animation: streak 3s ease-in-out infinite;
+}
+.nav-name .sl-2 {
+  top: 50%;
+  left: -80px;
+  width: calc(100% + 160px);
+  background: linear-gradient(to right, transparent, var(--accent-2) 25%, var(--accent-2) 45%, transparent);
+  animation: streak 3s ease-in-out infinite 0.5s;
+}
+.nav-name .sl-3 {
+  top: 90%;
+  left: -40px;
+  width: calc(100% + 100px);
+  background: linear-gradient(to right, transparent, var(--accent-3) 35%, var(--accent-3) 55%, transparent);
+  animation: streak 3s ease-in-out infinite 1s;
+}
+@keyframes streak {
+  0%   { opacity: 0; transform: translateX(-100%) scaleX(0.5); }
+  15%  { opacity: 0.5; }
+  40%  { opacity: 0.7; transform: translateX(0%) scaleX(1); }
+  60%  { opacity: 0.4; }
+  85%  { opacity: 0; transform: translateX(100%) scaleX(0.5); }
+  100% { opacity: 0; transform: translateX(100%) scaleX(0.5); }
+}
+
+/* ── Hover: everything cranks up ── */
+.nav-name:hover .brand-text { animation-duration: 1.2s; }
+.nav-name:hover .sl { animation-duration: 0.8s; filter: brightness(1.6); }
+
 .nav-links {
   display: flex;
   gap: 8px;
@@ -245,7 +332,7 @@ nav .nav-inner {
 /* ── Projects ── */
 .project-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 .project-card {
@@ -256,6 +343,8 @@ nav .nav-inner {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .project-card::before {
   content: '';
@@ -319,6 +408,7 @@ nav .nav-inner {
   color: var(--text-muted);
   margin-bottom: 14px;
   line-height: 1.65;
+  flex: 1;
 }
 .project-stack {
   display: flex;
@@ -401,8 +491,8 @@ footer {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  text-align: center;
+  gap: 6px;
+  text-align: center !important;
 }
 .footer-algo {
   display: flex;
@@ -446,9 +536,21 @@ footer {
 @media (max-width: 640px) {
   html { font-size: 13.5px; }
   main { padding: 0 20px; }
-  .hero { padding-top: 100px; }
+  .hero { padding-top: 80px; }
   section { padding-top: 44px; }
-  .nav-links a { padding: 4px 6px; }
+  /* Nav: stack brand + links vertically */
+  nav .nav-inner {
+    flex-direction: column;
+    height: auto;
+    padding: 10px 20px;
+    gap: 8px;
+  }
+  .nav-name .sl { display: none; }
+  .nav-name { font-size: 14px; }
+  .pixel-sprite { width: 36px; height: 24px; }
+  .pixel-sprite img { width: 36px; height: 24px; }
+  .nav-links { gap: 6px; }
+  .nav-links a { padding: 4px 8px; font-size: 11.5px; }
   .project-grid { grid-template-columns: 1fr; }
   .project-header { flex-direction: column; gap: 4px; }
   .contact-grid { flex-direction: column; }
@@ -472,7 +574,7 @@ nav, main { position: relative; z-index: 1; }
 
 <nav>
   <div class="nav-inner">
-    <span class="nav-name">atolat</span>
+    <span class="nav-name"><span class="sl sl-1"></span><span class="sl sl-2"></span><span class="sl sl-3"></span><span class="pixel-sprite"><img src="cat_running.gif" alt="pixel cat"></span><span class="brand-text">cachemeifyoucan</span></span>
     <ul class="nav-links">
       <li><a href="#about">about</a></li>
       <li><a href="#experience">experience</a></li>
@@ -507,8 +609,7 @@ nav, main { position: relative; z-index: 1; }
       Backend and infrastructure engineering — distributed caching, build tooling,
       developer productivity. Currently working on the build platform for Tableau
       at Salesforce: remote cache systems, auth infrastructure, artifact management,
-      and IaC with Terraform and EKS. Caching is a recurring theme — I think about
-      cache hierarchies, invalidation, and content-addressable storage a lot. Outside
+      and IaC with Terraform and EKS. Caching is a recurring theme. Outside
       of work, I tinker with dev tooling and Vedic astrology — sometimes both at once.
 
       <br><br>
@@ -713,12 +814,13 @@ nav, main { position: relative; z-index: 1; }
 
   <footer>
     <span>&copy; 2026 Arpan Tolat</span>
-    <span class="footer-algo"><span class="footer-dot"></span> backdrop: live simulation of Redis's <a href="https://github.com/redis/redis/blob/unstable/src/evict.c" target="_blank" rel="noopener">allkeys-lfu</a> eviction &mdash; Morris counter, probabilistic increment, time decay, sampled eviction</span>
+    <span class="footer-algo"><span class="footer-dot"></span> backdrop: simulation of Redis's <a href="https://github.com/redis/redis/blob/unstable/src/evict.c" target="_blank" rel="noopener">allkeys-lfu</a> eviction &mdash; Morris counter, probabilistic increment, time decay, sampled eviction</span>
   </footer>
 
 </main>
 
 <script>
+
 // ── Redis LFU eviction — live simulation ──
 //
 // This backdrop is a faithful implementation of Redis's allkeys-lfu
