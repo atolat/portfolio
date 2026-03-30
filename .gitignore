@@ -1,0 +1,15 @@
+terraform/.terraform/
+terraform/terraform.tfstate*
+terraform/plan.out
+*.png
+cat.gif
+cat_cyan.gif
+cat_green.gif
+cat_orange.gif
+cat_purple.gif
+cat_run.gif
+cat_preview.gif
+tenor_cat.gif
+kitty*.gif
+kitty*.webp
+elthen*.gif
