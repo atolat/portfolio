@@ -1,7 +1,7 @@
 terraform/.terraform/
 terraform/terraform.tfstate*
 terraform/plan.out
-*.png
+elthen_frame_*.png
 cat.gif
 cat_cyan.gif
 cat_green.gif
