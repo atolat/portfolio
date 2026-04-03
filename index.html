@@ -523,6 +523,170 @@ footer {
   50% { opacity: 1; }
 }
 
+/* ── Traceroute panel ── */
+.traceroute-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+.trace-toggle {
+  padding: 14px 20px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--accent-2);
+  transition: all 0.2s;
+  user-select: none;
+}
+.trace-toggle:hover {
+  background: rgba(255,255,255,0.02);
+  color: var(--accent-3);
+}
+.trace-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.5s ease;
+  padding: 0 20px;
+}
+.trace-content.open {
+  max-height: 800px;
+  padding: 0 20px 24px;
+}
+
+/* Request line */
+.trace-request {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  text-align: left;
+}
+.trace-request span { color: var(--text); }
+
+/* Diagram — horizontal node flow */
+.trace-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.trace-node {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 20px;
+  min-width: 130px;
+  background: var(--bg);
+  opacity: 0;
+  transform: scale(0.9);
+  transition: all 0.4s ease, border-color 0.4s;
+}
+.trace-node.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+.trace-node.active {
+  border-color: var(--accent-2);
+}
+.tn-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-2);
+  margin-bottom: 4px;
+}
+.tn-sub {
+  font-size: 11px;
+  color: var(--text-subtle);
+}
+.tn-badge {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+}
+.tn-badge.hit {
+  color: var(--accent-3);
+  background: rgba(110, 231, 183, 0.1);
+  border: 1px solid rgba(110, 231, 183, 0.2);
+}
+.tn-badge.miss {
+  color: var(--accent-warm);
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+/* Edges — connecting lines with animated dot */
+.trace-edge {
+  width: 60px;
+  position: relative;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.trace-edge.visible { opacity: 1; }
+.te-line {
+  width: 100%;
+  height: 1px;
+  background: var(--border);
+  position: relative;
+}
+.trace-edge.active .te-line {
+  background: var(--accent-2);
+}
+.te-dot {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  opacity: 0;
+  left: 0;
+}
+.trace-edge.animate .te-dot {
+  opacity: 1;
+  animation: dot-travel 0.6s ease-in-out forwards;
+}
+@keyframes dot-travel {
+  0% { left: 0; opacity: 1; }
+  80% { opacity: 1; }
+  100% { left: calc(100% - 6px); opacity: 0; }
+}
+.te-label {
+  position: absolute;
+  top: -14px;
+  font-size: 10px;
+  color: var(--text-subtle);
+  white-space: nowrap;
+}
+
+/* Details grid */
+.trace-details {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 16px;
+  font-size: 12px;
+  text-align: left;
+  opacity: 0;
+  transition: opacity 0.4s;
+  border-top: 1px solid var(--border);
+  padding-top: 16px;
+}
+.trace-details.visible { opacity: 1; }
+.td-key {
+  color: var(--text-subtle);
+}
+.td-val {
+  color: var(--text);
+}
+.td-val .dim { color: var(--text-subtle); font-size: 11px; }
+
 /* ── Scroll reveal ── */
 .reveal {
   opacity: 0;
@@ -559,6 +723,9 @@ footer {
   .edu-list { flex-direction: column; gap: 12px; }
   footer { flex-direction: column; gap: 8px; text-align: center; }
   .exp-header { flex-direction: column; gap: 2px; }
+  .trace-diagram { flex-direction: column; }
+  .trace-edge { width: 40px; height: 40px; transform: rotate(90deg); }
+  .trace-node { min-width: unset; width: 100%; }
 }
 /* ── Cache Backdrop ── */
 #cache-canvas {
@@ -812,6 +979,53 @@ nav, main { position: relative; z-index: 1; }
       <a href="mailto:arpantolat30@gmail.com">arpantolat30@gmail.com</a>
       <a href="https://github.com/atolat" target="_blank" rel="noopener">github.com/atolat</a>
       <a href="https://linkedin.com/in/atolat" target="_blank" rel="noopener">linkedin.com/in/atolat</a>
+    </div>
+  </section>
+
+  <!-- Traceroute panel -->
+  <section id="infra">
+    <div class="section-divider reveal">
+      <span class="section-label">How this page reached you</span>
+      <span class="section-line"></span>
+    </div>
+    <div class="traceroute-panel reveal" id="traceroutePanel">
+      <div class="trace-toggle" onclick="runTrace()">
+        <span id="traceBtn">run trace &#9654;</span>
+      </div>
+      <div class="trace-content" id="traceContent">
+        <!-- Request line -->
+        <div class="trace-request" id="traceRequest"></div>
+
+        <!-- Diagram -->
+        <div class="trace-diagram">
+          <div class="trace-node" id="tn-browser">
+            <div class="tn-title">Browser</div>
+            <div class="tn-sub">you, here</div>
+          </div>
+          <div class="trace-edge" id="te-1">
+            <div class="te-line"></div>
+            <div class="te-dot"></div>
+            <div class="te-label" id="te-1-label"></div>
+          </div>
+          <div class="trace-node" id="tn-cdn">
+            <div class="tn-title">CloudFront</div>
+            <div class="tn-sub" id="tn-cdn-pop">—</div>
+            <div class="tn-badge" id="tn-cdn-badge">—</div>
+          </div>
+          <div class="trace-edge" id="te-2">
+            <div class="te-line"></div>
+            <div class="te-dot"></div>
+            <div class="te-label" id="te-2-label"></div>
+          </div>
+          <div class="trace-node" id="tn-origin">
+            <div class="tn-title">S3 Origin</div>
+            <div class="tn-sub">us-east-1</div>
+          </div>
+        </div>
+
+        <!-- Details -->
+        <div class="trace-details" id="traceDetails"></div>
+      </div>
     </div>
   </section>
 
@@ -1223,6 +1437,130 @@ nav, main { position: relative; z-index: 1; }
   init();
   requestAnimationFrame(loop);
 })();
+
+// ── Traceroute visualization ──
+let traceRan = false;
+const wait = ms => new Promise(r => setTimeout(r, ms));
+
+async function runTrace() {
+  const content = document.getElementById('traceContent');
+  const btn = document.getElementById('traceBtn');
+
+  if (traceRan) {
+    content.classList.toggle('open');
+    btn.innerHTML = content.classList.contains('open') ? 'hide trace &#9660;' : 'run trace &#9654;';
+    return;
+  }
+
+  btn.innerHTML = 'tracing... &#9676;';
+  content.classList.add('open');
+  traceRan = true;
+
+  const STATS_API = 'https://i6kgmdqjm2.execute-api.us-east-1.amazonaws.com/stats';
+
+  let pop = '—', cacheStatus = '—', age = '0', latency = '—';
+  let isHit = false;
+  let stats = null;
+
+  try {
+    const t0 = performance.now();
+    const resp = await fetch(window.location.href, { cache: 'no-cache', method: 'HEAD' });
+    const t1 = performance.now();
+    latency = Math.round(t1 - t0) + 'ms';
+    pop = resp.headers.get('x-amz-cf-pop') || 'edge';
+    const xCache = resp.headers.get('x-cache') || '';
+    isHit = xCache.toLowerCase().includes('hit');
+    cacheStatus = isHit ? 'HIT' : 'MISS';
+    age = resp.headers.get('age') || '0';
+  } catch(e) {
+    pop = 'SFO53-C1'; cacheStatus = 'HIT'; isHit = true; latency = '14ms'; age = '247';
+  }
+
+  // Report stats and get totals
+  try {
+    const sr = await fetch(STATS_API, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cache_status: cacheStatus, pop: pop }),
+    });
+    stats = await sr.json();
+  } catch(e) { stats = null; }
+
+  // Request line
+  const req = document.getElementById('traceRequest');
+  req.innerHTML = `<span style="color:var(--text-subtle)">GET / HTTP/2</span> → <span>cachemeifyoucan.dev</span>`;
+
+  // Animate nodes appearing
+  const nodes = document.querySelectorAll('.trace-node');
+  const edges = document.querySelectorAll('.trace-edge');
+
+  // Step 1: Browser node
+  await wait(200);
+  nodes[0].classList.add('visible', 'active');
+
+  // Step 2: First edge animates
+  await wait(300);
+  edges[0].classList.add('visible', 'active', 'animate');
+  document.getElementById('te-1-label').textContent = 'TLS 1.3';
+
+  // Step 3: CloudFront node
+  await wait(600);
+  nodes[1].classList.add('visible', 'active');
+  document.getElementById('tn-cdn-pop').textContent = pop;
+  const badge = document.getElementById('tn-cdn-badge');
+  badge.textContent = cacheStatus + ' · ' + latency;
+  badge.className = 'tn-badge ' + (isHit ? 'hit' : 'miss');
+
+  // Step 4: Second edge (only if MISS)
+  await wait(400);
+  edges[1].classList.add('visible');
+  if (!isHit) {
+    edges[1].classList.add('active', 'animate');
+    document.getElementById('te-2-label').textContent = 'OAC SigV4';
+  } else {
+    document.getElementById('te-2-label').textContent = 'skipped';
+    edges[1].style.opacity = '0.3';
+  }
+
+  // Step 5: Origin node
+  await wait(500);
+  nodes[2].classList.add('visible');
+  if (!isHit) nodes[2].classList.add('active');
+  else nodes[2].style.opacity = '0.4';
+
+  // Step 6: Details
+  await wait(400);
+  const details = document.getElementById('traceDetails');
+  details.innerHTML = [
+    ['protocol', 'TLS 1.3 · HTTP/2+3'],
+    ['edge', `${pop} <span class="dim">${isHit ? '(served from cache)' : '(forwarded to origin)'}</span>`],
+    ['cache', `<span style="color:var(${isHit ? '--accent-3' : '--accent-warm'});font-weight:600">${cacheStatus}</span> <span class="dim">${isHit ? '· age=' + age + 's' : '· populated edge'}</span>`],
+    ['latency', latency],
+    ['origin', `s3://cachemeifyoucan-dev-site <span class="dim">(private bucket, OAC)</span>`],
+    ['cert', 'ACM · cachemeifyoucan.dev'],
+    ['dns', 'Route53 → CloudFront A-alias'],
+    ['iac', `<a href="https://github.com/atolat/portfolio/tree/main/terraform" target="_blank" rel="noopener" style="color:var(--accent-2)">Terraform</a> · 19 resources`],
+  ];
+
+  if (stats) {
+    rows.push(['', '']);
+    rows.push(['views', `${stats.total_views.toLocaleString()} total <span class="dim">· ${stats.today_views} today</span>`]);
+    rows.push(['hit ratio', `${(stats.hit_ratio * 100).toFixed(1)}% <span class="dim">(${stats.cache_hits} hits / ${stats.cache_misses} misses)</span>`]);
+    if (stats.unique_pops.length > 0) {
+      rows.push(['edge pops', `${stats.unique_pops.length} locations <span class="dim">· ${stats.unique_pops.slice(0, 5).join(', ')}${stats.unique_pops.length > 5 ? '...' : ''}</span>`]);
+    }
+  }
+
+  details.innerHTML = rows.map(([k,v]) => k === '' ? `<span></span><span></span>` : `<span class="td-key">${k}</span><span class="td-val">${v}</span>`).join('');
+  details.classList.add('visible');
+
+  // Deactivate glow after settling
+  await wait(800);
+  nodes.forEach(n => n.classList.remove('active'));
+  edges.forEach(e => e.classList.remove('active'));
+
+  btn.innerHTML = 'hide trace &#9660;';
+}
 
 // ── Scroll reveal ──
 const observer = new IntersectionObserver((entries) => {

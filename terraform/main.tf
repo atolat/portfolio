@@ -158,3 +158,112 @@ resource "aws_route53_record" "apex" {
     evaluate_target_health = false
   }
 }
+
+# ---------- DynamoDB for stats ----------
+
+resource "aws_dynamodb_table" "stats" {
+  name         = "cachemeifyoucan-stats"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "pk"
+
+  attribute {
+    name = "pk"
+    type = "S"
+  }
+}
+
+# ---------- Lambda for stats API ----------
+
+data "archive_file" "stats_lambda" {
+  type        = "zip"
+  source_file = "${path.module}/lambda/stats.py"
+  output_path = "${path.module}/lambda/stats.zip"
+}
+
+resource "aws_iam_role" "stats_lambda" {
+  name = "cachemeifyoucan-stats-lambda"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
+      Principal = { Service = "lambda.amazonaws.com" }
+    }]
+  })
+}
+
+resource "aws_iam_role_policy" "stats_lambda" {
+  name = "cachemeifyoucan-stats-policy"
+  role = aws_iam_role.stats_lambda.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect   = "Allow"
+        Action   = ["dynamodb:GetItem", "dynamodb:PutItem", "dynamodb:UpdateItem", "dynamodb:Scan"]
+        Resource = aws_dynamodb_table.stats.arn
+      },
+      {
+        Effect   = "Allow"
+        Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"]
+        Resource = "arn:aws:logs:*:*:*"
+      }
+    ]
+  })
+}
+
+resource "aws_lambda_function" "stats" {
+  function_name    = "cachemeifyoucan-stats"
+  handler          = "stats.handler"
+  runtime          = "python3.12"
+  role             = aws_iam_role.stats_lambda.arn
+  filename         = data.archive_file.stats_lambda.output_path
+  source_code_hash = data.archive_file.stats_lambda.output_base64sha256
+  timeout          = 10
+
+  environment {
+    variables = {
+      TABLE_NAME = aws_dynamodb_table.stats.name
+    }
+  }
+}
+
+# ---------- API Gateway for stats ----------
+
+resource "aws_apigatewayv2_api" "stats" {
+  name          = "cachemeifyoucan-stats"
+  protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_origins = ["https://cachemeifyoucan.dev"]
+    allow_methods = ["POST", "OPTIONS"]
+    allow_headers = ["Content-Type"]
+  }
+}
+
+resource "aws_apigatewayv2_integration" "stats" {
+  api_id                 = aws_apigatewayv2_api.stats.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.stats.invoke_arn
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "stats" {
+  api_id    = aws_apigatewayv2_api.stats.id
+  route_key = "POST /stats"
+  target    = "integrations/${aws_apigatewayv2_integration.stats.id}"
+}
+
+resource "aws_apigatewayv2_stage" "stats" {
+  api_id      = aws_apigatewayv2_api.stats.id
+  name        = "$default"
+  auto_deploy = true
+}
+
+resource "aws_lambda_permission" "stats_apigw" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.stats.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.stats.execution_arn}/*/*"
+}

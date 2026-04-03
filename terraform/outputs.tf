@@ -18,3 +18,7 @@ output "certificate_arn" {
 output "bucket_name" {
   value = aws_s3_bucket.site.id
 }
+
+output "stats_api_url" {
+  value = aws_apigatewayv2_stage.stats.invoke_url
+}
